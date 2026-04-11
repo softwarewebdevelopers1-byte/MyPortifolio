@@ -55,7 +55,6 @@ const upload = multer({
 });
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-const publicDirectory = path.resolve(__dirname, "..");
 
 type AsyncHandler = (
   request: Request,
@@ -146,7 +145,7 @@ app.use(
   }),
 );
 app.use(express.json());
-app.use(express.static(publicDirectory));
+
 
 app.get("/api/health", (_request: Request, response: Response) => {
   response.json({ ok: true });
@@ -326,10 +325,6 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
-app.get("*", (_request: Request, response: Response) => {
-  response.sendFile(path.join(publicDirectory, "index.html"));
-});
-
 async function startServer() {
   try {
     await mongoose.connect(mongoUri);
