@@ -139,7 +139,7 @@ function requireOwnerAuth(
 
 app.use(
   cors({
-    origin: "*", // Or specify your frontend URL
+    origin:["https://inspiring-blancmange-7e0dbe.netlify.app"], // Or specify your frontend URL
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
