@@ -1,0 +1,1651 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>
+      Carlos Maina| Full Stack Developer · Scalable Systems & AI Integration
+    </title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 6 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* Light/Dark Mode Variables */
+      :root {
+        --primary: #3b82f6;
+        --primary-dark: #2563eb;
+        --primary-glow: rgba(59, 130, 246, 0.3);
+        --bg-primary: #f8fafc;
+        --bg-secondary: #ffffff;
+        --bg-card: #ffffff;
+        --bg-elevated: #f1f5f9;
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --code-bg: #1e293b;
+        --code-text: #e2e8f0;
+        --gradient-1: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        --gradient-2: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+        --space-xs: 0.5rem;
+        --space-sm: 1rem;
+        --space-md: 1.5rem;
+        --space-lg: 2.5rem;
+        --space-xl: 4rem;
+        --radius-sm: 0.5rem;
+        --radius-md: 1rem;
+        --radius-lg: 1.5rem;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-glow: 0 0 20px var(--primary-glow);
+      }
+
+      [data-theme="dark"] {
+        --bg-primary: #0a0a0f;
+        --bg-secondary: #111827;
+        --bg-card: #1f2937;
+        --bg-elevated: #374151;
+        --text-primary: #f3f4f6;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #374151;
+        --code-bg: #0f172a;
+        --code-text: #cbd5e1;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        line-height: 1.6;
+        overflow-x: hidden;
+        transition:
+          background-color 0.3s ease,
+          color 0.3s ease;
+      }
+
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+      }
+
+      /* Loader */
+      .loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        transition: opacity 0.5s ease;
+      }
+      .loader.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .loader-ring {
+        width: 48px;
+        height: 48px;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Navbar */
+      .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        padding: var(--space-sm) 0;
+        transition: all 0.3s ease;
+        background: transparent;
+      }
+      .navbar.scrolled {
+        background: var(--bg-secondary);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.75rem 0;
+      }
+      .navbar .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .nav-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        font-family: "Space Grotesk", monospace;
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .nav-brand i {
+        background: none;
+        -webkit-background-clip: unset;
+        color: var(--primary);
+      }
+      .nav-links {
+        display: flex;
+        gap: var(--space-md);
+        align-items: center;
+      }
+      .nav-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--text-primary);
+      }
+      .theme-toggle {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--text-primary);
+      }
+      .theme-toggle:hover {
+        transform: scale(1.05);
+        border-color: var(--primary);
+      }
+      .mobile-menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      /* Buttons */
+      .btn-primary,
+      .btn-secondary {
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-primary {
+        background: var(--gradient-1);
+        color: white;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-glow);
+      }
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+      }
+      .btn-secondary:hover {
+        background: var(--bg-elevated);
+        border-color: var(--primary);
+      }
+
+      /* Hero */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 6rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+        align-items: center;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(59, 130, 246, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 100px;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        margin-bottom: var(--space-md);
+        font-size: 0.875rem;
+      }
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: var(--space-md);
+      }
+      .gradient-text {
+        background: var(--gradient-1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero-description {
+        color: var(--text-muted);
+        margin-bottom: var(--space-lg);
+        font-size: 1.125rem;
+      }
+      .hero-stats {
+        display: flex;
+        gap: var(--space-lg);
+        margin-bottom: var(--space-lg);
+      }
+      .stat-number {
+        display: block;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+      .stat-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+      }
+      .hero-actions {
+        display: flex;
+        gap: var(--space-sm);
+      }
+      .code-window {
+        background: var(--code-bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+      }
+      .code-line {
+        font-family: "Space Grotesk", monospace;
+        color: var(--code-text);
+        font-size: 0.875rem;
+        margin: 0.25rem 0;
+      }
+      .code-line .keyword {
+        color: #c084fc;
+      }
+      .code-line .func {
+        color: #60a5fa;
+      }
+      .code-line .string {
+        color: #34d399;
+      }
+
+      /* Section styles */
+      .section-header {
+        text-align: center;
+        margin-bottom: var(--space-xl);
+      }
+      .section-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(59, 130, 246, 0.1);
+        padding: 0.25rem 1rem;
+        border-radius: 100px;
+        font-size: 0.875rem;
+        margin-bottom: var(--space-sm);
+      }
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: var(--space-sm);
+      }
+
+      /* Projects Grid */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: var(--space-lg);
+      }
+      .project-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+      }
+      .project-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.3);
+        border-color: var(--primary);
+      }
+      .card-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16/9;
+      }
+      .project-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+      }
+      .project-card:hover .project-image {
+        transform: scale(1.05);
+      }
+      .card-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-sm);
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .project-card:hover .card-overlay {
+        opacity: 1;
+      }
+      .view-project-btn,
+      .delete-project-btn {
+        background: var(--primary);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .delete-project-btn {
+        background: #ef4444;
+      }
+      .card-content {
+        padding: var(--space-md);
+      }
+      .project-category {
+        font-size: 0.75rem;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .project-title {
+        font-size: 1.25rem;
+        margin: 0.5rem 0;
+        color: var(--text-primary);
+      }
+      .project-description {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .project-links {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+      .project-link {
+        font-size: 0.75rem;
+        color: var(--primary);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: color 0.2s;
+      }
+      .project-link:hover {
+        color: var(--text-primary);
+      }
+      .project-date {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      /* Tech Stack & Skills */
+      .skills-section {
+        background: var(--bg-secondary);
+        padding: var(--space-xl) 0;
+        margin: var(--space-xl) 0;
+        border-radius: var(--radius-lg);
+      }
+      .skills-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        justify-content: center;
+        margin-top: var(--space-lg);
+      }
+      .skill-pill {
+        background: var(--bg-elevated);
+        padding: 0.5rem 1.25rem;
+        border-radius: 100px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        color: var(--text-secondary);
+      }
+      .skill-pill i {
+        color: var(--primary);
+      }
+      .skill-pill:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+      }
+      .skill-pill:hover i {
+        color: white;
+      }
+
+      /* About */
+      .about {
+        padding: var(--space-xl) 0;
+      }
+      .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+      }
+      .focus-item {
+        display: flex;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+        padding: var(--space-md);
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        border-left: 3px solid var(--primary);
+      }
+
+      /* Modals */
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        visibility: hidden;
+        opacity: 0;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.is-open {
+        visibility: visible;
+        opacity: 1;
+      }
+      .modal-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
+      }
+      .modal-container {
+        position: relative;
+        background: var(--bg-card);
+        width: 90%;
+        max-width: 650px;
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        border: 1px solid var(--border-color);
+        z-index: 10;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .modal-large {
+        max-width: 1000px;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-md);
+      }
+      .modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+      .form-group {
+        margin-bottom: var(--space-md);
+      }
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        color: var(--text-primary);
+        font-family: inherit;
+      }
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+      .dropzone {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .dropzone:hover {
+        border-color: var(--primary);
+      }
+      .modal-actions {
+        display: flex;
+        gap: var(--space-sm);
+        justify-content: flex-end;
+        margin-top: var(--space-md);
+      }
+      .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 3000;
+      }
+      .toast {
+        background: var(--bg-elevated);
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-sm);
+        margin-top: 0.5rem;
+        border-left: 4px solid var(--primary);
+        animation: slideIn 0.3s ease;
+        color: var(--text-primary);
+      }
+      .progress-container {
+        margin-top: var(--space-md);
+      }
+      .progress-bar {
+        height: 6px;
+        background: var(--border-color);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: var(--primary);
+        transition: width 0.3s;
+      }
+      .image-preview {
+        margin-top: var(--space-sm);
+        text-align: center;
+      }
+      .image-preview img {
+        max-width: 100%;
+        border-radius: var(--radius-sm);
+        max-height: 200px;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .hero-grid,
+        .about-grid {
+          grid-template-columns: 1fr;
+        }
+        .hero-title {
+          font-size: 2.5rem;
+        }
+        .nav-links {
+          display: none;
+        }
+        .mobile-menu-btn {
+          display: block;
+        }
+      }
+      .empty-state {
+        text-align: center;
+        padding: var(--space-xl);
+        color: var(--text-muted);
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader" id="loader"><div class="loader-ring"></div></div>
+
+    <nav class="navbar" id="navbar">
+      <div class="container">
+        <div class="nav-brand">
+          <i class="fa-solid fa-code"></i><span>Carlos Maina</span>
+        </div>
+        <div class="nav-links">
+          <a href="#home" class="nav-link active">Work</a>
+          <a href="#about" class="nav-link">About</a>
+          <button class="theme-toggle" id="themeToggle">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <button class="btn-primary" id="ownerLoginBtn">
+            <i class="fa-solid fa-lock"></i> Owner
+          </button>
+          <button
+            class="btn-secondary owner-only"
+            id="openUploadBtn"
+            style="display: none"
+          >
+            <i class="fa-solid fa-plus"></i> Add Project
+          </button>
+          <button
+            class="btn-secondary owner-only"
+            id="ownerLogoutBtn"
+            style="display: none"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </button>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </nav>
+
+    <section class="hero" id="home">
+      <div class="container">
+        <div class="hero-grid">
+          <div data-aos="fade-up">
+            <div class="hero-badge">
+              <i class="fa-regular fa-star"></i> Full Stack Developer · AI
+              Engineering
+            </div>
+            <h1 class="hero-title">
+              Building
+              <span class="gradient-text">real-world systems</span> that scale
+            </h1>
+            <p class="hero-description">
+              Full-stack architect focused on automation, system efficiency, and
+              AI-powered solutions. I turn complex problems into
+              production-ready applications.
+            </p>
+            <div class="hero-stats">
+              <div>
+                <span class="stat-number" id="projectCount">0</span
+                ><span class="stat-label">Projects</span>
+              </div>
+              <div>
+                <span class="stat-number">98%</span
+                ><span class="stat-label">Automation Rate</span>
+              </div>
+              <div>
+                <span class="stat-number">5+</span
+                ><span class="stat-label">AI Integrations</span>
+              </div>
+            </div>
+            <div class="hero-actions">
+              <a href="#portfolio" class="btn-primary"
+                ><i class="fa-regular fa-eye"></i> View Solutions</a
+              >
+              <button class="btn-secondary" id="contactScroll">
+                <i class="fa-regular fa-message"></i> Get in touch
+              </button>
+            </div>
+          </div>
+          <div data-aos="fade-left">
+            <div class="code-window">
+              <div class="code-line">
+                <span class="keyword">const</span> engineer = {
+              </div>
+              <div class="code-line">
+                &nbsp;&nbsp;stack: [<span class="string">'React'</span>,
+                <span class="string">'Node.js'</span>,
+                <span class="string">'MongoDB'</span>,
+                <span class="string">'TypeScript'</span>],
+              </div>
+              <div class="code-line">
+                &nbsp;&nbsp;philosophy:
+                <span class="string">'solve real problems'</span>,
+              </div>
+              <div class="code-line">
+                &nbsp;&nbsp;aiIntegrations: <span class="func">true</span>,
+              </div>
+              <div class="code-line">
+                &nbsp;&nbsp;automate:
+                <span class="func">() =></span> efficiency++
+              </div>
+              <div class="code-line">};</div>
+              <div class="code-line">
+                <span class="func">engineer.build</span>(<span class="string"
+                  >'scalable future'</span
+                >);
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="skills-section">
+      <div class="container">
+        <div class="section-header" data-aos="fade-up">
+          <div class="section-tag">
+            <i class="fa-solid fa-microchip"></i> Tech Arsenal
+          </div>
+          <h2 class="section-title">
+            Full Stack <span class="gradient-text">Expertise</span>
+          </h2>
+        </div>
+        <div class="skills-grid">
+          <div class="skill-pill">
+            <i class="fa-brands fa-react"></i> React + TS
+          </div>
+          <div class="skill-pill">
+            <i class="fa-brands fa-node-js"></i> Node.js/Express
+          </div>
+          <div class="skill-pill">
+            <i class="fa-solid fa-database"></i> MongoDB
+          </div>
+          <div class="skill-pill">
+            <i class="fa-solid fa-cloud"></i> RESTful APIs
+          </div>
+          <div class="skill-pill">
+            <i class="fa-solid fa-robot"></i> AI Integrations
+          </div>
+          <div class="skill-pill">
+            <i class="fa-brands fa-git-alt"></i> Git/GitHub Actions
+          </div>
+          <div class="skill-pill">
+            <i class="fa-solid fa-chart-line"></i> System Automation
+          </div>
+          <div class="skill-pill">
+            <i class="fa-solid fa-server"></i> Scalable Architecture
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="portfolio" id="portfolio">
+      <div class="container">
+        <div class="section-header" data-aos="fade-up">
+          <div class="section-tag">
+            <i class="fa-regular fa-grid-2"></i> Real-World Impact
+          </div>
+          <h2 class="section-title">
+            Featured <span class="gradient-text">Projects</span>
+          </h2>
+          <p>From AI chatbots to automation pipelines — built for production</p>
+        </div>
+        <div class="projects-grid" id="galleryContainer">
+          <div class="loading-state">
+            <i class="fa-solid fa-spinner fa-spin"></i> Loading solutions...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div class="container">
+        <div class="about-grid">
+          <div data-aos="fade-right">
+            <div class="section-tag">
+              <i class="fa-regular fa-user"></i> Problem solver
+            </div>
+            <h2 class="section-title">
+              I don't just write code — I
+              <span class="gradient-text">engineer outcomes</span>
+            </h2>
+            <p class="about-text">
+              Every project begins with a real business need. I specialize in
+              end-to-end development: from database design to AI-enhanced
+              features, ensuring performance, maintainability, and delightful
+              UX.
+            </p>
+            <div class="focus-item">
+              <i
+                class="fa-solid fa-arrows-spin fa-xl"
+                style="color: #3b82f6"
+              ></i>
+              <div>
+                <strong>Automation first</strong><br />Reduce manual overhead
+                with smart workflows
+              </div>
+            </div>
+            <div class="focus-item">
+              <i class="fa-solid fa-brain fa-xl" style="color: #8b5cf6"></i>
+              <div>
+                <strong>AI integration</strong><br />LLMs, embeddings, and
+                intelligent assistants
+              </div>
+            </div>
+          </div>
+          <div data-aos="fade-left">
+            <div class="section-tag">
+              <i class="fa-regular fa-building"></i> Scalable mindset
+            </div>
+            <div class="focus-item">
+              <i class="fa-solid fa-chart-simple"></i>
+              <div>
+                <strong>Performance & efficiency</strong><br />Optimized
+                queries, caching, and real-time updates
+              </div>
+            </div>
+            <div class="focus-item">
+              <i class="fa-solid fa-cubes"></i>
+              <div>
+                <strong>Fullstack ownership</strong><br />From UI/UX with React
+                to secure Node.js backends
+              </div>
+            </div>
+            <div class="focus-item">
+              <i class="fa-solid fa-diagram-project"></i>
+              <div>
+                <strong>System architecture</strong><br />Microservices,
+                event-driven, and cloud-ready
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modals -->
+    <div class="modal" id="loginModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Owner Access</h3>
+          <button class="modal-close" id="closeLoginModalBtn">&times;</button>
+        </div>
+        <form id="loginForm">
+          <input
+            type="password"
+            id="ownerPassword"
+            placeholder="Enter master password"
+            class="form-input"
+            required
+          />
+          <div class="modal-actions" style="margin-top: 1rem">
+            <button type="submit" class="btn-primary">Login</button
+            ><button type="button" id="cancelLoginBtn" class="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="uploadModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Upload New Project</h3>
+          <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <form id="uploadForm">
+          <div class="form-group">
+            <label class="form-label">Project Title *</label
+            ><input
+              type="text"
+              id="title"
+              placeholder="e.g., AI Code Assistant"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label
+              ><select id="category" class="form-select">
+                <option value="">Select category</option>
+                <option value="AI Integration">AI Integration</option>
+                <option value="Fullstack App">Fullstack App</option>
+                <option value="Automation">Automation</option>
+                <option value="Scalable API">Scalable API</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Project Date</label
+              ><input
+                type="date"
+                id="projectDate"
+                class="form-input"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label
+            ><textarea
+              id="description"
+              rows="3"
+              placeholder="Real-world problem solved & technical approach"
+              class="form-textarea"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Live URL (optional)</label
+            ><input
+              type="url"
+              id="liveUrl"
+              placeholder="https://your-project.com"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">GitHub URL (optional)</label
+            ><input
+              type="url"
+              id="githubUrl"
+              placeholder="https://github.com/username/repo"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project Image *</label>
+            <div class="dropzone" id="dropArea">
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                hidden
+                required
+              />
+              <div class="dropzone-content">
+                <i class="fa-regular fa-cloud-upload"></i>
+                <p>Drag & drop or click to upload</p>
+                <small>PNG, JPG, WEBP (Max 10MB)</small>
+              </div>
+              <div
+                class="image-preview"
+                id="imagePreview"
+                style="display: none"
+              >
+                <img id="previewImg" /><button
+                  type="button"
+                  id="removeImageBtn"
+                  class="btn-secondary"
+                  style="margin-top: 0.5rem"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="progress-container"
+            id="uploadProgress"
+            style="display: none"
+          >
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary">Publish Project</button
+            ><button type="button" id="cancelUploadBtn" class="btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-container modal-large" id="detailContent"></div>
+    </div>
+    <div class="toast-container" id="toastContainer"></div>
+    <template id="projectCardTemplate"
+      ><div class="project-card">
+        <div class="card-image-wrapper">
+          <img class="project-image" />
+          <div class="card-overlay">
+            <button class="view-project-btn">Details</button
+            ><button
+              class="delete-project-btn owner-only"
+              style="display: none"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="card-content">
+          <span class="project-category"></span>
+          <h3 class="project-title"></h3>
+          <p class="project-description"></p>
+          <div class="project-links"></div>
+          <div class="project-date"></div>
+        </div></div
+    ></template>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      // API Configuration - Local server on port 4000
+      const API_BASE = "http://localhost:4000/api/projects";
+      const OWNER_LOGIN_API = "http://localhost:4000/api/owner/login";
+      const OWNER_SESSION_API = "http://localhost:4000/api/owner/session";
+      const OWNER_TOKEN_STORAGE_KEY = "devPortfolioToken";
+
+      let currentProjects = [];
+      let ownerToken = localStorage.getItem(OWNER_TOKEN_STORAGE_KEY) || "";
+      let isOwnerAuthenticated = false;
+      let selectedFile = null;
+      const galleryContainer = document.getElementById("galleryContainer");
+      const cardTemplate = document.getElementById("projectCardTemplate");
+
+      function showToast(msg, type = "success") {
+        const t = document.createElement("div");
+        t.className = `toast ${type}`;
+        t.innerText = msg;
+        document.getElementById("toastContainer").appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+      }
+
+      function formatDate(dateStr) {
+        if (!dateStr) return "Recent";
+        return new Date(dateStr).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+      }
+
+      async function validateSession() {
+        if (!ownerToken) {
+          isOwnerAuthenticated = false;
+          updateOwnerUI();
+          return false;
+        }
+
+        try {
+          const response = await fetch(OWNER_SESSION_API, {
+            headers: {
+              Authorization: `Bearer ${ownerToken}`,
+            },
+          });
+          const data = await response.json();
+          isOwnerAuthenticated = data.authenticated === true;
+
+          if (!isOwnerAuthenticated) {
+            ownerToken = "";
+            localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
+          }
+
+          updateOwnerUI();
+          return isOwnerAuthenticated;
+        } catch (error) {
+          console.error("Session validation error:", error);
+          isOwnerAuthenticated = false;
+          updateOwnerUI();
+          return false;
+        }
+      }
+
+      async function fetchProjects() {
+        try {
+          const response = await fetch(API_BASE);
+          if (!response.ok) throw new Error("Failed to fetch projects");
+
+          const data = await response.json();
+          currentProjects = data.projects || [];
+
+          // Update project count in hero stats
+          const projectCountEl = document.getElementById("projectCount");
+          if (projectCountEl) {
+            projectCountEl.textContent = currentProjects.length;
+          }
+
+          renderProjects(currentProjects);
+        } catch (error) {
+          console.error("Error fetching projects:", error);
+          galleryContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-server"></i><p>Unable to connect to server. Please make sure the backend is running on port 4000.</p></div>`;
+          showToast("Failed to load projects from server", "error");
+        }
+      }
+
+      function renderProjects(projects) {
+        if (!projects.length) {
+          galleryContainer.innerHTML = `<div class="empty-state"><i class="fa-regular fa-folder-open"></i><p>No projects yet. Add your first project using the Owner panel.</p></div>`;
+          return;
+        }
+
+        galleryContainer.innerHTML = "";
+        projects.forEach((proj) => {
+          const clone = cardTemplate.content.cloneNode(true);
+          const card = clone.querySelector(".project-card");
+          card.querySelector(".project-image").src = proj.imageUrl;
+          card.querySelector(".project-category").innerText =
+            proj.category || "Fullstack App";
+          card.querySelector(".project-title").innerText = proj.title;
+          card.querySelector(".project-description").innerText =
+            proj.description?.slice(0, 100) ||
+            "Full-stack solution with real impact.";
+
+          const linksContainer = card.querySelector(".project-links");
+          linksContainer.innerHTML = ""; // Clear default
+
+          // Add live URL if available (coming from custom fields - you may need to add these to your schema)
+          if (proj.liveUrl) {
+            linksContainer.innerHTML += `<a href="${proj.liveUrl}" target="_blank" class="project-link" onclick="event.stopPropagation()"><i class="fa-solid fa-globe"></i> Live Demo</a>`;
+          }
+          if (proj.githubUrl) {
+            linksContainer.innerHTML += `<a href="${proj.githubUrl}" target="_blank" class="project-link" onclick="event.stopPropagation()"><i class="fa-brands fa-github"></i> Source Code</a>`;
+          }
+
+          card.querySelector(".project-date").innerHTML =
+            `<i class="fa-regular fa-calendar"></i> ${formatDate(proj.projectDate)}`;
+
+          const delBtn = card.querySelector(".delete-project-btn");
+          if (delBtn) {
+            delBtn.style.display = isOwnerAuthenticated
+              ? "inline-flex"
+              : "none";
+          }
+
+          card.addEventListener("click", (e) => {
+            if (
+              !e.target.closest(".delete-project-btn") &&
+              !e.target.closest(".project-link")
+            )
+              openDetailModal(proj);
+          });
+
+          delBtn?.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await deleteProject(proj.id);
+          });
+
+          galleryContainer.appendChild(clone);
+        });
+      }
+
+      async function deleteProject(id) {
+        if (!isOwnerAuthenticated) {
+          openLoginModal();
+          return;
+        }
+
+        if (
+          !confirm(
+            "Permanently delete this project? This action cannot be undone.",
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/${id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${ownerToken}`,
+            },
+          });
+
+          if (response.status === 401) {
+            showToast("Session expired. Please login again.", "error");
+            await validateSession();
+            return;
+          }
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to delete project");
+          }
+
+          showToast("Project deleted successfully!");
+          await fetchProjects(); // Refresh the list
+        } catch (error) {
+          console.error("Error deleting project:", error);
+          showToast(error.message || "Failed to delete project", "error");
+        }
+      }
+
+      function openDetailModal(proj) {
+        const detailDiv = document.getElementById("detailContent");
+        detailDiv.innerHTML = `
+          <div class="modal-header">
+            <h3>${escapeHtml(proj.title)}</h3>
+            <button id="closeDetailBtn" class="modal-close">&times;</button>
+          </div>
+          <img src="${proj.imageUrl}" style="width:100%; border-radius:var(--radius-md); margin:1rem 0">
+          <p><strong>Category:</strong> ${escapeHtml(proj.category || "Fullstack App")}</p>
+          <p>${escapeHtml(proj.description || "Real-world fullstack application with focus on scalability and efficiency.")}</p>
+          <div style="display:flex; gap:1rem; margin:1rem 0">
+            ${proj.liveUrl ? `<a href="${proj.liveUrl}" target="_blank" class="btn-primary"><i class="fa-solid fa-globe"></i> Live Demo</a>` : ""}
+            ${proj.githubUrl ? `<a href="${proj.githubUrl}" target="_blank" class="btn-secondary"><i class="fa-brands fa-github"></i> GitHub</a>` : ""}
+          </div>
+          <p><i class="fa-regular fa-calendar"></i> ${formatDate(proj.projectDate)}</p>
+        `;
+        document.getElementById("detailModal").classList.add("is-open");
+        document.getElementById("closeDetailBtn").onclick = () =>
+          document.getElementById("detailModal").classList.remove("is-open");
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function (m) {
+          if (m === "&") return "&amp;";
+          if (m === "<") return "&lt;";
+          if (m === ">") return "&gt;";
+          return m;
+        });
+      }
+
+      async function loginOwner(e) {
+        e.preventDefault();
+        const password = document.getElementById("ownerPassword").value;
+
+        if (!password) {
+          showToast("Please enter the owner password", "error");
+          return;
+        }
+
+        try {
+          const response = await fetch(OWNER_LOGIN_API, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ password }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Login failed");
+          }
+
+          ownerToken = data.token;
+          localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, ownerToken);
+          isOwnerAuthenticated = true;
+          updateOwnerUI();
+          closeLoginModal();
+          showToast(data.message || "Login successful!");
+
+          // Refresh projects to show delete buttons
+          await fetchProjects();
+        } catch (error) {
+          console.error("Login error:", error);
+          showToast(error.message || "Invalid password", "error");
+        }
+      }
+
+      function updateOwnerUI() {
+        const openUploadBtn = document.getElementById("openUploadBtn");
+        const ownerLogoutBtn = document.getElementById("ownerLogoutBtn");
+        const ownerLoginBtn = document.getElementById("ownerLoginBtn");
+
+        if (openUploadBtn) {
+          openUploadBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
+        }
+        if (ownerLogoutBtn) {
+          ownerLogoutBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
+        }
+        if (ownerLoginBtn) {
+          ownerLoginBtn.style.display = isOwnerAuthenticated
+            ? "none"
+            : "inline-flex";
+        }
+
+        // Update delete buttons in existing projects
+        const deleteBtns = document.querySelectorAll(".delete-project-btn");
+        deleteBtns.forEach((btn) => {
+          btn.style.display = isOwnerAuthenticated ? "inline-flex" : "none";
+        });
+      }
+
+      function clearOwnerAuth() {
+        ownerToken = "";
+        isOwnerAuthenticated = false;
+        localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
+        updateOwnerUI();
+        showToast("Logged out successfully.");
+        fetchProjects(); // Refresh to hide delete buttons
+      }
+
+      function openLoginModal() {
+        document.getElementById("loginModal").classList.add("is-open");
+      }
+
+      function closeLoginModal() {
+        document.getElementById("loginModal").classList.remove("is-open");
+        document.getElementById("loginForm").reset();
+      }
+
+      function openUploadModal() {
+        if (!isOwnerAuthenticated) {
+          openLoginModal();
+          return;
+        }
+        // Set default date to today
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("projectDate").value = today;
+        document.getElementById("uploadModal").classList.add("is-open");
+      }
+
+      function closeUploadModal() {
+        document.getElementById("uploadModal").classList.remove("is-open");
+        resetUploadForm();
+      }
+
+      function resetUploadForm() {
+        document.getElementById("uploadForm").reset();
+        selectedFile = null;
+        document.getElementById("imagePreview").style.display = "none";
+        document.getElementById("previewImg").src = "";
+        document.getElementById("uploadProgress").style.display = "none";
+        const dropzoneContent = document.querySelector(
+          "#dropArea .dropzone-content",
+        );
+        if (dropzoneContent) dropzoneContent.style.display = "block";
+      }
+
+      function handleFileSelect(file) {
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+          showToast("Only images are allowed", "error");
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          showToast("File size must be less than 10MB", "error");
+          return;
+        }
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById("previewImg").src = e.target.result;
+          document.getElementById("imagePreview").style.display = "block";
+          const dropzoneContent = document.querySelector(
+            "#dropArea .dropzone-content",
+          );
+          if (dropzoneContent) dropzoneContent.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+
+      async function uploadProjectHandler(e) {
+        e.preventDefault();
+
+        if (!isOwnerAuthenticated) {
+          openLoginModal();
+          return;
+        }
+
+        const title = document.getElementById("title").value.trim();
+        if (!title) {
+          showToast("Project title is required", "error");
+          return;
+        }
+
+        const projectDate = document.getElementById("projectDate").value;
+        if (!projectDate) {
+          showToast("Project date is required", "error");
+          return;
+        }
+
+        if (!selectedFile) {
+          showToast("Please select an image for the project", "error");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append(
+          "category",
+          document.getElementById("category").value || "Fullstack App",
+        );
+        formData.append(
+          "description",
+          document.getElementById("description").value.trim() || "",
+        );
+        formData.append("projectDate", projectDate);
+        formData.append("file", selectedFile);
+
+        // Note: liveUrl and githubUrl would need to be added to your server schema
+        // For now, they're not sent to the server
+
+        const submitBtn = document.querySelector(
+          "#uploadForm button[type='submit']",
+        );
+        submitBtn.disabled = true;
+        document.getElementById("uploadProgress").style.display = "block";
+
+        try {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", API_BASE, true);
+          xhr.setRequestHeader("Authorization", `Bearer ${ownerToken}`);
+
+          xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+              const percent = Math.round((e.loaded / e.total) * 100);
+              const progressFill = document.getElementById("progressFill");
+              if (progressFill) progressFill.style.width = `${percent}%`;
+            }
+          });
+
+          xhr.onload = async () => {
+            submitBtn.disabled = false;
+            document.getElementById("uploadProgress").style.display = "none";
+
+            if (xhr.status === 401) {
+              showToast("Session expired. Please login again.", "error");
+              await validateSession();
+              return;
+            }
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const data = JSON.parse(xhr.responseText);
+              showToast(data.message || "Project uploaded successfully!");
+              closeUploadModal();
+              await fetchProjects(); // Refresh the list
+            } else {
+              const error = JSON.parse(xhr.responseText);
+              showToast(error.error || "Upload failed", "error");
+            }
+          };
+
+          xhr.onerror = () => {
+            submitBtn.disabled = false;
+            document.getElementById("uploadProgress").style.display = "none";
+            showToast("Network error while uploading", "error");
+          };
+
+          xhr.send(formData);
+        } catch (error) {
+          submitBtn.disabled = false;
+          document.getElementById("uploadProgress").style.display = "none";
+          showToast("Error uploading project", "error");
+        }
+      }
+
+      // Theme Management
+      function initTheme() {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        updateThemeIcon(savedTheme);
+      }
+
+      function updateThemeIcon(theme) {
+        const themeIcon = document.querySelector("#themeToggle i");
+        if (themeIcon) {
+          themeIcon.className =
+            theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+        }
+      }
+
+      function toggleTheme() {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      }
+
+      // Event listeners
+      const ownerLoginBtn = document.getElementById("ownerLoginBtn"),
+        openUploadBtn = document.getElementById("openUploadBtn"),
+        ownerLogoutBtn = document.getElementById("ownerLogoutBtn");
+
+      ownerLoginBtn?.addEventListener("click", openLoginModal);
+      openUploadBtn?.addEventListener("click", openUploadModal);
+      ownerLogoutBtn?.addEventListener("click", clearOwnerAuth);
+
+      document
+        .getElementById("loginForm")
+        ?.addEventListener("submit", loginOwner);
+      document
+        .getElementById("cancelLoginBtn")
+        ?.addEventListener("click", closeLoginModal);
+      document
+        .getElementById("closeLoginModalBtn")
+        ?.addEventListener("click", closeLoginModal);
+      document
+        .getElementById("uploadForm")
+        ?.addEventListener("submit", uploadProjectHandler);
+      document
+        .getElementById("closeModalBtn")
+        ?.addEventListener("click", closeUploadModal);
+      document
+        .getElementById("cancelUploadBtn")
+        ?.addEventListener("click", closeUploadModal);
+      document
+        .getElementById("contactScroll")
+        ?.addEventListener("click", () =>
+          document
+            .getElementById("about")
+            .scrollIntoView({ behavior: "smooth" }),
+        );
+      document
+        .getElementById("themeToggle")
+        ?.addEventListener("click", toggleTheme);
+
+      document.querySelectorAll(".modal-overlay").forEach((overlay) =>
+        overlay.addEventListener("click", () => {
+          document
+            .querySelectorAll(".modal")
+            .forEach((m) => m.classList.remove("is-open"));
+        }),
+      );
+
+      const dropArea = document.getElementById("dropArea");
+      const fileInput = document.getElementById("fileInput");
+
+      dropArea?.addEventListener("click", () => fileInput.click());
+      dropArea?.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = "var(--primary)";
+      });
+      dropArea?.addEventListener("dragleave", () => {
+        dropArea.style.borderColor = "var(--border-color)";
+      });
+      dropArea?.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.style.borderColor = "var(--border-color)";
+        if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+      });
+
+      fileInput?.addEventListener("change", (e) => {
+        if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+      });
+
+      document
+        .getElementById("removeImageBtn")
+        ?.addEventListener("click", () => {
+          selectedFile = null;
+          document.getElementById("imagePreview").style.display = "none";
+          const dropzoneContent = document.querySelector(
+            "#dropArea .dropzone-content",
+          );
+          if (dropzoneContent) dropzoneContent.style.display = "block";
+          fileInput.value = "";
+        });
+
+      // Initialize
+      AOS.init({ duration: 800, once: true });
+      initTheme();
+
+      window.addEventListener("load", async () => {
+        setTimeout(() => {
+          document.getElementById("loader")?.classList.add("fade-out");
+          setTimeout(() => document.getElementById("loader")?.remove(), 500);
+        }, 400);
+
+        await validateSession();
+        await fetchProjects();
+      });
+
+      window.addEventListener("scroll", () => {
+        const nav = document.getElementById("navbar");
+        if (window.scrollY > 50) nav.classList.add("scrolled");
+        else nav.classList.remove("scrolled");
+      });
+    </script>
+  </body>
+</html>
