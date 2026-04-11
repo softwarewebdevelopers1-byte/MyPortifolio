@@ -139,13 +139,12 @@ function requireOwnerAuth(
 
 app.use(
   cors({
-    origin:["https://inspiring-blancmange-7e0dbe.netlify.app"], // Or specify your frontend URL
+    origin: "*", // Or specify your frontend URL
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 app.use(express.json());
-
 
 app.get("/api/health", (_request: Request, response: Response) => {
   response.json({ ok: true });
@@ -175,7 +174,9 @@ app.post(
 );
 
 app.get("/api/owner/session", (request: Request, response: Response) => {
-  response.json({ authenticated: isValidOwnerToken(extractBearerToken(request)) });
+  response.json({
+    authenticated: isValidOwnerToken(extractBearerToken(request)),
+  });
 });
 
 app.get(
@@ -189,6 +190,8 @@ app.get(
         title: project.title,
         category: project.category,
         description: project.description,
+        liveUrl: project.liveUrl,
+        githubUrl: project.githubUrl,
         projectDate: project.projectDate,
         imageUrl: project.imageUrl,
         storagePath: project.storagePath,
@@ -205,6 +208,8 @@ app.post(
   upload.single("file"),
   asyncHandler(async (request: Request, response: Response) => {
     const file = request.file;
+    const liveUrl = request.body.liveUrl?.trim() || "";
+    const githubUrl = request.body.githubUrl?.trim() || "";
     const title = request.body.title?.trim();
     const category = request.body.category?.trim() || "";
     const description = request.body.description?.trim() || "";
@@ -255,6 +260,8 @@ app.post(
     const imageUrl = publicUrlResult.data.publicUrl;
 
     const savedProject = await Project.create({
+      liveUrl,
+      githubUrl,
       title,
       category,
       description,

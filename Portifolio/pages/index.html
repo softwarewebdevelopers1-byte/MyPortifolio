@@ -24,7 +24,7 @@
 
     <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-    <link rel="icon" type="image/x-icon" href="./images/icon.jpeg">
+    <link rel="icon" type="image/x-icon" href="./images/icon.jpeg" />
 
     <style>
       * {
@@ -1085,8 +1085,10 @@
     <script>
       // API Configuration - Local server on port 4000
       const API_BASE = "https://myportifolio-2ovw.onrender.com/api/projects";
-      const OWNER_LOGIN_API = "https://myportifolio-2ovw.onrender.com/api/owner/login";
-      const OWNER_SESSION_API = "https://myportifolio-2ovw.onrender.com/api/owner/session";
+      const OWNER_LOGIN_API =
+        "https://myportifolio-2ovw.onrender.com/api/owner/login";
+      const OWNER_SESSION_API =
+        "https://myportifolio-2ovw.onrender.com/api/owner/session";
       const OWNER_TOKEN_STORAGE_KEY = "devPortfolioToken";
 
       let currentProjects = [];
@@ -1437,13 +1439,25 @@
           openLoginModal();
           return;
         }
-
+        const githubUrl = document.getElementById("githubUrl").value.trim();
+        if (
+          githubUrl &&
+          !/^https?:\/\/(www\.)?github\.com\/.+/.test(githubUrl)
+        ) {
+          showToast("Please enter a valid GitHub URL", "error");
+          return;
+        }
+        const liveUrl = document.getElementById("liveUrl").value.trim();
+        if (liveUrl && !/^https?:\/\/.+/.test(liveUrl)) {
+          showToast("Please enter a valid Live URL", "error");
+          return;
+        }
         const title = document.getElementById("title").value.trim();
         if (!title) {
           showToast("Project title is required", "error");
           return;
         }
-
+        console.log(githubUrl, liveUrl);
         const projectDate = document.getElementById("projectDate").value;
         if (!projectDate) {
           showToast("Project date is required", "error");
@@ -1467,6 +1481,8 @@
         );
         formData.append("projectDate", projectDate);
         formData.append("file", selectedFile);
+        formData.append("liveUrl", liveUrl);
+        formData.append("githubUrl", githubUrl);
 
         // Note: liveUrl and githubUrl would need to be added to your server schema
         // For now, they're not sent to the server
