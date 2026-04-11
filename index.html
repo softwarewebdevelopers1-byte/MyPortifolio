@@ -203,6 +203,61 @@
         cursor: pointer;
       }
 
+      /* Mobile Menu Styles */
+      .nav-links-mobile {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--bg-secondary);
+        backdrop-filter: blur(12px);
+        flex-direction: column;
+        padding: 80px 2rem 2rem;
+        gap: 1.5rem;
+        transition: right 0.3s ease;
+        z-index: 999;
+        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+      }
+      .nav-links-mobile.active {
+        right: 0;
+      }
+      .nav-links-mobile .nav-link {
+        font-size: 1.1rem;
+        padding: 0.5rem 0;
+      }
+      .nav-links-mobile .theme-toggle,
+      .nav-links-mobile .btn-primary,
+      .nav-links-mobile .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+      .mobile-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        display: none;
+      }
+      .mobile-menu-overlay.active {
+        display: block;
+      }
+      .close-mobile-menu {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-primary);
+      }
+
       /* Buttons */
       .btn-primary,
       .btn-secondary {
@@ -712,6 +767,38 @@
       </div>
     </nav>
 
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="nav-links-mobile" id="mobileNavLinks">
+      <button class="close-mobile-menu" id="closeMobileMenuBtn">
+        <i class="fa-solid fa-times"></i>
+      </button>
+      <a href="#home" class="nav-link active" data-mobile="true">Work</a>
+      <a href="#about" class="nav-link" data-mobile="true">About</a>
+      <button class="theme-toggle" id="mobileThemeToggle">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <button class="btn-primary" id="mobileOwnerLoginBtn">
+        <i class="fa-solid fa-lock"></i> Owner
+      </button>
+      <button
+        class="btn-secondary owner-only"
+        id="mobileOpenUploadBtn"
+        style="display: none"
+      >
+        <i class="fa-solid fa-plus"></i> Add Project
+      </button>
+      <button
+        class="btn-secondary owner-only"
+        id="mobileOwnerLogoutBtn"
+        style="display: none"
+      >
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+
     <section class="hero" id="home">
       <div class="container">
         <div class="hero-grid">
@@ -1096,6 +1183,51 @@
       const galleryContainer = document.getElementById("galleryContainer");
       const cardTemplate = document.getElementById("projectCardTemplate");
 
+      // Mobile Menu Functions
+      function openMobileMenu() {
+        const mobileNav = document.getElementById("mobileNavLinks");
+        const overlay = document.getElementById("mobileMenuOverlay");
+        mobileNav.classList.add("active");
+        overlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeMobileMenu() {
+        const mobileNav = document.getElementById("mobileNavLinks");
+        const overlay = document.getElementById("mobileMenuOverlay");
+        mobileNav.classList.remove("active");
+        overlay.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+
+      function syncMobileMenuWithAuth() {
+        const mobileOpenUploadBtn = document.getElementById(
+          "mobileOpenUploadBtn",
+        );
+        const mobileOwnerLogoutBtn = document.getElementById(
+          "mobileOwnerLogoutBtn",
+        );
+        const mobileOwnerLoginBtn = document.getElementById(
+          "mobileOwnerLoginBtn",
+        );
+
+        if (mobileOpenUploadBtn) {
+          mobileOpenUploadBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
+        }
+        if (mobileOwnerLogoutBtn) {
+          mobileOwnerLogoutBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
+        }
+        if (mobileOwnerLoginBtn) {
+          mobileOwnerLoginBtn.style.display = isOwnerAuthenticated
+            ? "none"
+            : "inline-flex";
+        }
+      }
+
       function showToast(msg, type = "success") {
         const t = document.createElement("div");
         t.className = `toast ${type}`;
@@ -1117,6 +1249,7 @@
         if (!ownerToken) {
           isOwnerAuthenticated = false;
           updateOwnerUI();
+          syncMobileMenuWithAuth();
           return false;
         }
 
@@ -1135,11 +1268,13 @@
           }
 
           updateOwnerUI();
+          syncMobileMenuWithAuth();
           return isOwnerAuthenticated;
         } catch (error) {
           console.error("Session validation error:", error);
           isOwnerAuthenticated = false;
           updateOwnerUI();
+          syncMobileMenuWithAuth();
           return false;
         }
       }
@@ -1152,7 +1287,6 @@
           const data = await response.json();
           currentProjects = data.projects || [];
 
-          // Update project count in hero stats
           const projectCountEl = document.getElementById("projectCount");
           if (projectCountEl) {
             projectCountEl.textContent = currentProjects.length;
@@ -1185,9 +1319,8 @@
             "Full-stack solution with real impact.";
 
           const linksContainer = card.querySelector(".project-links");
-          linksContainer.innerHTML = ""; // Clear default
+          linksContainer.innerHTML = "";
 
-          // Add live URL if available (coming from custom fields - you may need to add these to your schema)
           if (proj.liveUrl) {
             linksContainer.innerHTML += `<a href="${proj.liveUrl}" target="_blank" class="project-link" onclick="event.stopPropagation()"><i class="fa-solid fa-globe"></i> Live Demo</a>`;
           }
@@ -1256,7 +1389,7 @@
           }
 
           showToast("Project deleted successfully!");
-          await fetchProjects(); // Refresh the list
+          await fetchProjects();
         } catch (error) {
           console.error("Error deleting project:", error);
           showToast(error.message || "Failed to delete project", "error");
@@ -1322,10 +1455,10 @@
           localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, ownerToken);
           isOwnerAuthenticated = true;
           updateOwnerUI();
+          syncMobileMenuWithAuth();
           closeLoginModal();
           showToast(data.message || "Login successful!");
 
-          // Refresh projects to show delete buttons
           await fetchProjects();
         } catch (error) {
           console.error("Login error:", error);
@@ -1354,7 +1487,6 @@
             : "inline-flex";
         }
 
-        // Update delete buttons in existing projects
         const deleteBtns = document.querySelectorAll(".delete-project-btn");
         deleteBtns.forEach((btn) => {
           btn.style.display = isOwnerAuthenticated ? "inline-flex" : "none";
@@ -1366,11 +1498,13 @@
         isOwnerAuthenticated = false;
         localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
         updateOwnerUI();
+        syncMobileMenuWithAuth();
         showToast("Logged out successfully.");
-        fetchProjects(); // Refresh to hide delete buttons
+        fetchProjects();
       }
 
       function openLoginModal() {
+        closeMobileMenu();
         document.getElementById("loginModal").classList.add("is-open");
       }
 
@@ -1384,7 +1518,7 @@
           openLoginModal();
           return;
         }
-        // Set default date to today
+        closeMobileMenu();
         const today = new Date().toISOString().split("T")[0];
         document.getElementById("projectDate").value = today;
         document.getElementById("uploadModal").classList.add("is-open");
@@ -1482,9 +1616,6 @@
         formData.append("liveUrl", liveUrl);
         formData.append("githubUrl", githubUrl);
 
-        // Note: liveUrl and githubUrl would need to be added to your server schema
-        // For now, they're not sent to the server
-
         const submitBtn = document.querySelector(
           "#uploadForm button[type='submit']",
         );
@@ -1518,7 +1649,7 @@
               const data = JSON.parse(xhr.responseText);
               showToast(data.message || "Project uploaded successfully!");
               closeUploadModal();
-              await fetchProjects(); // Refresh the list
+              await fetchProjects();
             } else {
               const error = JSON.parse(xhr.responseText);
               showToast(error.error || "Upload failed", "error");
@@ -1552,6 +1683,11 @@
           themeIcon.className =
             theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
         }
+        const mobileThemeIcon = document.querySelector("#mobileThemeToggle i");
+        if (mobileThemeIcon) {
+          mobileThemeIcon.className =
+            theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+        }
       }
 
       function toggleTheme() {
@@ -1571,6 +1707,61 @@
       ownerLoginBtn?.addEventListener("click", openLoginModal);
       openUploadBtn?.addEventListener("click", openUploadModal);
       ownerLogoutBtn?.addEventListener("click", clearOwnerAuth);
+
+      // Mobile menu event listeners
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+      const closeMobileMenuBtn = document.getElementById("closeMobileMenuBtn");
+      const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+      mobileMenuBtn?.addEventListener("click", openMobileMenu);
+      closeMobileMenuBtn?.addEventListener("click", closeMobileMenu);
+      mobileMenuOverlay?.addEventListener("click", closeMobileMenu);
+
+      // Mobile menu link clicks
+      document.querySelectorAll("[data-mobile='true']").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const href = link.getAttribute("href");
+          if (href) {
+            const target = document.querySelector(href);
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth" });
+            }
+          }
+          closeMobileMenu();
+        });
+      });
+
+      // Mobile theme toggle
+      const mobileThemeToggle = document.getElementById("mobileThemeToggle");
+      mobileThemeToggle?.addEventListener("click", () => {
+        toggleTheme();
+        closeMobileMenu();
+      });
+
+      // Mobile auth buttons
+      const mobileOwnerLoginBtn = document.getElementById(
+        "mobileOwnerLoginBtn",
+      );
+      const mobileOpenUploadBtn = document.getElementById(
+        "mobileOpenUploadBtn",
+      );
+      const mobileOwnerLogoutBtn = document.getElementById(
+        "mobileOwnerLogoutBtn",
+      );
+
+      mobileOwnerLoginBtn?.addEventListener("click", () => {
+        openLoginModal();
+        closeMobileMenu();
+      });
+      mobileOpenUploadBtn?.addEventListener("click", () => {
+        openUploadModal();
+        closeMobileMenu();
+      });
+      mobileOwnerLogoutBtn?.addEventListener("click", () => {
+        clearOwnerAuth();
+        closeMobileMenu();
+      });
 
       document
         .getElementById("loginForm")
