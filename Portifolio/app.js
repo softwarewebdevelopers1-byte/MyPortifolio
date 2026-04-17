@@ -1,831 +1,684 @@
-// API Configuration
-const API_BASE = "https://portifolio-yohl.onrender.com/api/projects";
-const OWNER_LOGIN_API = "https://portifolio-yohl.onrender.com/api/owner/login";
-const OWNER_SESSION_API = "https://portifolio-yohl.onrender.com/api/owner/session";
-const OWNER_TOKEN_STORAGE_KEY = "portfolioOwnerToken";
+// API Configuration - Local server on port 4000
+const API_BASE = "https://myportifolio-2ovw.onrender.com/api/projects";
+const OWNER_LOGIN_API =
+    "https://myportifolio-2ovw.onrender.com/api/owner/login";
+const OWNER_SESSION_API =
+    "https://myportifolio-2ovw.onrender.com/api/owner/session";
+const OWNER_TOKEN_STORAGE_KEY = "devPortfolioToken";
 
-// DOM Elements
+let currentProjects = [];
+let ownerToken = localStorage.getItem(OWNER_TOKEN_STORAGE_KEY) || "";
+let isOwnerAuthenticated = false;
+let selectedFile = null;
 const galleryContainer = document.getElementById("galleryContainer");
 const cardTemplate = document.getElementById("projectCardTemplate");
-const loginModal = document.getElementById("loginModal");
-const uploadModal = document.getElementById("uploadModal");
-const detailModal = document.getElementById("detailModal");
-const ownerLoginBtn = document.getElementById("ownerLoginBtn");
-const ownerLogoutBtn = document.getElementById("ownerLogoutBtn");
-const heroOwnerBtn = document.getElementById("heroOwnerBtn");
-const openUploadBtn = document.getElementById("openUploadBtn");
-const heroUploadBtn = document.getElementById("heroUploadBtn");
-const closeLoginModalBtn = document.getElementById("closeLoginModalBtn");
-const cancelLoginBtn = document.getElementById("cancelLoginBtn");
-const closeModalBtn = document.getElementById("closeModalBtn");
-const cancelUploadBtn = document.getElementById("cancelUploadBtn");
-const loginForm = document.getElementById("loginForm");
-const ownerPasswordInput = document.getElementById("ownerPassword");
-const submitLoginBtn = document.getElementById("submitLoginBtn");
-const uploadForm = document.getElementById("uploadForm");
-const titleInput = document.getElementById("title");
-const categoryInput = document.getElementById("category");
-const descriptionInput = document.getElementById("description");
-const projectDateInput = document.getElementById("projectDate");
-const fileInput = document.getElementById("fileInput");
-const dropArea = document.getElementById("dropArea");
-const fileNameDisplay = document.getElementById("fileNameDisplay");
-const uploadProgress = document.getElementById("uploadProgress");
-const progressFill = document.getElementById("progressFill");
-const progressPercent = document.getElementById("progressPercent");
-const submitUploadBtn = document.getElementById("submitUploadBtn");
-const imagePreview = document.getElementById("imagePreview");
-const previewImg = document.getElementById("previewImg");
-const removeImageBtn = document.getElementById("removeImageBtn");
-const filterTabs = document.getElementById("filterTabs");
-const loader = document.getElementById("loader");
 
-// State
-let selectedFile = null;
-let currentProjects = [];
-let currentFilter = "all";
-let ownerToken = localStorage.getItem(OWNER_TOKEN_STORAGE_KEY) || "";
-let isOwnerAuthenticated = Boolean(ownerToken);
-let pendingOwnerAction = null;
-
-function getDisplayDate(project) {
-    return project.projectDate || project.createdAt;
+// Mobile Menu Functions
+function openMobileMenu() {
+    const mobileNav = document.getElementById("mobileNavLinks");
+    const overlay = document.getElementById("mobileMenuOverlay");
+    mobileNav.classList.add("active");
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
 }
 
-function parseProjectDate(dateString) {
-    if (!dateString) return null;
+function closeMobileMenu() {
+    const mobileNav = document.getElementById("mobileNavLinks");
+    const overlay = document.getElementById("mobileMenuOverlay");
+    mobileNav.classList.remove("active");
+    overlay.classList.remove("active");
+    document.body.style.overflow = "";
+}
 
-    const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (dateOnlyMatch) {
-        const [, year, month, day] = dateOnlyMatch;
-        return new Date(Number(year), Number(month) - 1, Number(day));
+function syncMobileMenuWithAuth() {
+    const mobileOpenUploadBtn = document.getElementById(
+        "mobileOpenUploadBtn",
+    );
+    const mobileOwnerLogoutBtn = document.getElementById(
+        "mobileOwnerLogoutBtn",
+    );
+    const mobileOwnerLoginBtn = document.getElementById(
+        "mobileOwnerLoginBtn",
+    );
+
+    if (mobileOpenUploadBtn) {
+        mobileOpenUploadBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
     }
-
-    const parsed = new Date(dateString);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-// Initialize AOS
-AOS.init({
-    duration: 800,
-    once: true,
-    offset: 100
-});
-
-// Hide loader after page load
-window.addEventListener("load", () => {
-    setTimeout(() => {
-        loader.classList.add("fade-out");
-        setTimeout(() => {
-            loader.style.display = "none";
-        }, 500);
-    }, 500);
-});
-
-// Navigation scroll effect
-window.addEventListener("scroll", () => {
-    const navbar = document.getElementById("navbar");
-    if (window.scrollY > 50) {
-        navbar.classList.add("scrolled");
-    } else {
-        navbar.classList.remove("scrolled");
+    if (mobileOwnerLogoutBtn) {
+        mobileOwnerLogoutBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
     }
-});
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute("href"));
-        if (target) {
-            target.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-    });
-});
-
-// Toast System
-function showToast(message, type = "success") {
-    const container = document.getElementById("toastContainer");
-    const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = "slideOutRight 0.3s ease";
-        setTimeout(() => {
-            toast.remove();
-        }, 300);
-    }, 3000);
+    if (mobileOwnerLoginBtn) {
+        mobileOwnerLoginBtn.style.display = isOwnerAuthenticated
+            ? "none"
+            : "inline-flex";
+    }
 }
 
-function formatDate(dateString) {
-    const date = parseProjectDate(dateString);
-    if (!date) return "Date not set";
+function showToast(msg, type = "success") {
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerText = msg;
+    document.getElementById("toastContainer").appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
 
-    return date.toLocaleDateString("en-US", {
+function formatDate(dateStr) {
+    if (!dateStr) return "Recent";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
         month: "short",
         day: "numeric",
-        year: "numeric"
     });
 }
 
-function escapeHtml(value) {
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
-
-function sanitizeFileName(value) {
-    return String(value || "project")
-        .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase() || "project";
-}
-
-function blobToDataUrl(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("Could not read image data."));
-        reader.readAsDataURL(blob);
-    });
-}
-
-async function getDownloadableImageSource(imageUrl) {
-    try {
-        const response = await fetch(imageUrl, { mode: "cors" });
-        if (!response.ok) {
-            throw new Error("Image download failed.");
-        }
-
-        const blob = await response.blob();
-        const dataUrl = await blobToDataUrl(blob);
-        return typeof dataUrl === "string" ? dataUrl : imageUrl;
-    } catch (_error) {
-        return imageUrl;
-    }
-}
-
-function createProjectPdfCaptureNode(project, imageSource) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "project-pdf-capture";
-    wrapper.innerHTML = `
-        <div class="modal-container modal-large project-pdf-capture-shell">
-            <div class="modal-header">
-                <div>
-                    <div class="modal-tag">${escapeHtml(project.category || "Graphic Design")}</div>
-                    <h3 class="modal-title">${escapeHtml(project.title)}</h3>
-                </div>
-            </div>
-            <div class="project-detail-layout">
-                <div class="project-detail-image-panel">
-                    <img
-                        src="${imageSource}"
-                        alt="${escapeHtml(project.title)}"
-                        class="project-detail-image"
-                    >
-                </div>
-                <div class="project-detail-meta">
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <p style="color: var(--gray-600); line-height: 1.7;">${escapeHtml(project.description) || "No description provided."}</p>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Created</label>
-                        <p style="color: var(--gray-500);">${formatDate(getDisplayDate(project))}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    return wrapper;
-}
-
-function waitForImages(container) {
-    const images = Array.from(container.querySelectorAll("img"));
-    return Promise.all(images.map((image) => {
-        if (image.complete) {
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve) => {
-            image.onload = () => resolve();
-            image.onerror = () => resolve();
-        });
-    }));
-}
-
-async function downloadProjectSnapshot(project) {
-    const button = document.getElementById("downloadProjectBtn");
-    if (button) {
-        button.disabled = true;
-    }
-
-    try {
-        if (typeof html2canvas === "undefined" || !window.jspdf?.jsPDF) {
-            throw new Error("PDF export tools are not available.");
-        }
-
-        const imageSource = await getDownloadableImageSource(project.imageUrl);
-        const captureNode = createProjectPdfCaptureNode(project, imageSource);
-        document.body.appendChild(captureNode);
-        await waitForImages(captureNode);
-
-        const canvas = await html2canvas(captureNode, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#ffffff"
-        });
-
-        captureNode.remove();
-
-        const { jsPDF } = window.jspdf;
-        const pdfWidth = canvas.width;
-        const pdfHeight = canvas.height;
-        const pdf = new jsPDF(
-            pdfWidth > pdfHeight ? "landscape" : "portrait",
-            "pt",
-            [pdfWidth, pdfHeight]
-        );
-
-        pdf.addImage(
-            canvas.toDataURL("image/png"),
-            "PNG",
-            0,
-            0,
-            pdfWidth,
-            pdfHeight
-        );
-        pdf.save(`${sanitizeFileName(project.title)}.pdf`);
-        showToast("Project PDF downloaded.");
-    } catch (error) {
-        showToast(error.message || "Could not download project.", "error");
-    } finally {
-        if (button) {
-            button.disabled = false;
-        }
-    }
-}
-
-function closeDetailModal() {
-    detailModal.classList.remove("is-open");
-    document.body.style.overflow = "";
-}
-
-// Modal Functions
-function openLoginModal(nextAction = null) {
-    pendingOwnerAction = nextAction;
-    loginModal.classList.add("is-open");
-    document.body.style.overflow = "hidden";
-    if (ownerPasswordInput) {
-        ownerPasswordInput.value = "";
-        setTimeout(() => ownerPasswordInput.focus(), 50);
-    }
-}
-
-function closeLoginModal() {
-    loginModal.classList.remove("is-open");
-    document.body.style.overflow = "";
-    if (loginForm) loginForm.reset();
-}
-
-function openModal() {
-    if (!isOwnerAuthenticated) {
-        openLoginModal("upload");
-        return;
-    }
-
-    if (projectDateInput && !projectDateInput.value) {
-        projectDateInput.value = new Date().toISOString().split("T")[0];
-    }
-    uploadModal.classList.add("is-open");
-    document.body.style.overflow = "hidden";
-}
-
-function closeModal() {
-    uploadModal.classList.remove("is-open");
-    uploadForm.reset();
-    selectedFile = null;
-    fileNameDisplay.textContent = "PNG, JPG, WEBP, or GIF (Max 10MB)";
-    uploadProgress.style.display = "none";
-    progressFill.style.width = "0%";
-    if (progressPercent) progressPercent.textContent = "0%";
-    imagePreview.style.display = "none";
-    previewImg.src = "";
-    document.body.style.overflow = "";
-}
-
-function setOwnerAuth(token) {
-    ownerToken = token;
-    isOwnerAuthenticated = Boolean(token);
-
-    if (token) {
-        localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, token);
-    } else {
-        localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
-    }
-
-    updateOwnerUI();
-    filterProjects();
-}
-
-function clearOwnerAuth(showMessage = false) {
-    pendingOwnerAction = null;
-    setOwnerAuth("");
-    closeLoginModal();
-    closeModal();
-    if (showMessage) {
-        showToast("Owner session ended. Please log in again.", "error");
-    }
-}
-
-function updateOwnerUI() {
-    const ownerOnlyElements = [
-        openUploadBtn,
-        heroUploadBtn,
-        ownerLogoutBtn,
-        ...document.querySelectorAll(".delete-project-btn")
-    ];
-
-    ownerOnlyElements.forEach((element) => {
-        if (element) {
-            element.hidden = !isOwnerAuthenticated;
-        }
-    });
-
-    if (ownerLoginBtn) ownerLoginBtn.hidden = isOwnerAuthenticated;
-    if (heroOwnerBtn) heroOwnerBtn.hidden = isOwnerAuthenticated;
-}
-
-async function validateStoredOwnerSession() {
+async function validateSession() {
     if (!ownerToken) {
-        setOwnerAuth("");
-        return;
+        isOwnerAuthenticated = false;
+        updateOwnerUI();
+        syncMobileMenuWithAuth();
+        return false;
     }
 
     try {
         const response = await fetch(OWNER_SESSION_API, {
             headers: {
-                Authorization: `Bearer ${ownerToken}`
-            }
+                Authorization: `Bearer ${ownerToken}`,
+            },
         });
-        const payload = await response.json();
+        const data = await response.json();
+        isOwnerAuthenticated = data.authenticated === true;
 
-        if (!response.ok || !payload.authenticated) {
-            clearOwnerAuth();
-            return;
+        if (!isOwnerAuthenticated) {
+            ownerToken = "";
+            localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
         }
 
-        setOwnerAuth(ownerToken);
+        updateOwnerUI();
+        syncMobileMenuWithAuth();
+        return isOwnerAuthenticated;
     } catch (error) {
-        clearOwnerAuth();
+        console.error("Session validation error:", error);
+        isOwnerAuthenticated = false;
+        updateOwnerUI();
+        syncMobileMenuWithAuth();
+        return false;
     }
 }
 
-async function loginOwner(event) {
-    event.preventDefault();
+async function fetchProjects() {
+    try {
+        const response = await fetch(API_BASE);
+        if (!response.ok) throw new Error("Failed to fetch projects");
 
-    const password = ownerPasswordInput?.value.trim();
-    if (!password) {
-        showToast("Enter the owner password to continue.", "error");
+        const data = await response.json();
+        currentProjects = data.projects || [];
+
+        const projectCountEl = document.getElementById("projectCount");
+        if (projectCountEl) {
+            projectCountEl.textContent = currentProjects.length;
+        }
+
+        renderProjects(currentProjects);
+    } catch (error) {
+        console.error("Error fetching projects:", error);
+        galleryContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-server"></i><p>Unable to connect to server. Please make sure the backend is running on port 4000.</p></div>`;
+        showToast("Failed to load projects from server", "error");
+    }
+}
+
+function renderProjects(projects) {
+    if (!projects.length) {
+        galleryContainer.innerHTML = `<div class="empty-state"><i class="fa-regular fa-folder-open"></i><p>No projects yet. Add your first project using the Owner panel.</p></div>`;
         return;
     }
 
-    submitLoginBtn.disabled = true;
+    galleryContainer.innerHTML = "";
+    projects.forEach((proj) => {
+        const clone = cardTemplate.content.cloneNode(true);
+        const card = clone.querySelector(".project-card");
+        card.querySelector(".project-image").src = proj.imageUrl;
+        card.querySelector(".project-category").innerText =
+            proj.category || "Fullstack App";
+        card.querySelector(".project-title").innerText = proj.title;
+        card.querySelector(".project-description").innerText =
+            proj.description?.slice(0, 100) ||
+            "Full-stack solution with real impact.";
+
+        const linksContainer = card.querySelector(".project-links");
+        linksContainer.innerHTML = "";
+
+        if (proj.liveUrl) {
+            linksContainer.innerHTML += `<a href="${proj.liveUrl}" target="_blank" class="project-link" onclick="event.stopPropagation()"><i class="fa-solid fa-globe"></i> Live Demo</a>`;
+        }
+        if (proj.githubUrl) {
+            linksContainer.innerHTML += `<a href="${proj.githubUrl}" target="_blank" class="project-link" onclick="event.stopPropagation()"><i class="fa-brands fa-github"></i> Source Code</a>`;
+        }
+
+        card.querySelector(".project-date").innerHTML =
+            `<i class="fa-regular fa-calendar"></i> ${formatDate(proj.projectDate)}`;
+
+        const delBtn = card.querySelector(".delete-project-btn");
+        if (delBtn) {
+            delBtn.style.display = isOwnerAuthenticated
+                ? "inline-flex"
+                : "none";
+        }
+
+        card.addEventListener("click", (e) => {
+            if (
+                !e.target.closest(".delete-project-btn") &&
+                !e.target.closest(".project-link")
+            )
+                openDetailModal(proj);
+        });
+
+        delBtn?.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await deleteProject(proj.id);
+        });
+
+        galleryContainer.appendChild(clone);
+    });
+}
+
+async function deleteProject(id) {
+    if (!isOwnerAuthenticated) {
+        openLoginModal();
+        return;
+    }
+
+    if (
+        !confirm(
+            "Permanently delete this project? This action cannot be undone.",
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${ownerToken}`,
+            },
+        });
+
+        if (response.status === 401) {
+            showToast("Session expired. Please login again.", "error");
+            await validateSession();
+            return;
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to delete project");
+        }
+
+        showToast("Project deleted successfully!");
+        await fetchProjects();
+    } catch (error) {
+        console.error("Error deleting project:", error);
+        showToast(error.message || "Failed to delete project", "error");
+    }
+}
+
+function openDetailModal(proj) {
+    const detailDiv = document.getElementById("detailContent");
+    detailDiv.innerHTML = `
+          <div class="modal-header">
+            <h3>${escapeHtml(proj.title)}</h3>
+            <button id="closeDetailBtn" class="modal-close">&times;</button>
+          </div>
+          <img src="${proj.imageUrl}" style="width:100%; border-radius:var(--radius-md); margin:1rem 0">
+          <p><strong>Category:</strong> ${escapeHtml(proj.category || "Fullstack App")}</p>
+          <p>${escapeHtml(proj.description || "Real-world fullstack application with focus on scalability and efficiency.")}</p>
+          <div style="display:flex; gap:1rem; margin:1rem 0">
+            ${proj.liveUrl ? `<a href="${proj.liveUrl}" target="_blank" class="btn-primary"><i class="fa-solid fa-globe"></i> Live Demo</a>` : ""}
+            ${proj.githubUrl ? `<a href="${proj.githubUrl}" target="_blank" class="btn-secondary"><i class="fa-brands fa-github"></i> GitHub</a>` : ""}
+          </div>
+          <p><i class="fa-regular fa-calendar"></i> ${formatDate(proj.projectDate)}</p>
+        `;
+    document.getElementById("detailModal").classList.add("is-open");
+    document.getElementById("closeDetailBtn").onclick = () =>
+        document.getElementById("detailModal").classList.remove("is-open");
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return str.replace(/[&<>]/g, function (m) {
+        if (m === "&") return "&amp;";
+        if (m === "<") return "&lt;";
+        if (m === ">") return "&gt;";
+        return m;
+    });
+}
+
+async function loginOwner(e) {
+    e.preventDefault();
+    const password = document.getElementById("ownerPassword").value;
+
+    if (!password) {
+        showToast("Please enter the owner password", "error");
+        return;
+    }
 
     try {
         const response = await fetch(OWNER_LOGIN_API, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ password })
+            body: JSON.stringify({ password }),
         });
 
-        const payload = await response.json();
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error(payload.error || "Owner login failed.");
+            throw new Error(data.error || "Login failed");
         }
 
-        setOwnerAuth(payload.token || "");
+        ownerToken = data.token;
+        localStorage.setItem(OWNER_TOKEN_STORAGE_KEY, ownerToken);
+        isOwnerAuthenticated = true;
+        updateOwnerUI();
+        syncMobileMenuWithAuth();
         closeLoginModal();
+        showToast(data.message || "Login successful!");
 
-        const shouldOpenUploadModal = pendingOwnerAction === "upload";
-        pendingOwnerAction = null;
-
-        showToast(
-            shouldOpenUploadModal
-                ? "Owner login successful. Upload controls are ready."
-                : (payload.message || "Owner login successful.")
-        );
-
-        if (shouldOpenUploadModal) {
-            openModal();
-        }
+        await fetchProjects();
     } catch (error) {
-        showToast(error.message || "Owner login failed.", "error");
-    } finally {
-        submitLoginBtn.disabled = false;
+        console.error("Login error:", error);
+        showToast(error.message || "Invalid password", "error");
     }
 }
 
-function openDetailModal(project) {
-    const detailContent = document.getElementById("detailContent");
-    detailContent.innerHTML = `
-        <div class="modal-header">
-            <div>
-                <div class="modal-tag">${project.category || "Graphic Design"}</div>
-                <h3 class="modal-title">${escapeHtml(project.title)}</h3>
-            </div>
-            <button class="modal-close" id="closeDetailModal">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <div class="project-detail-layout">
-            <div class="project-detail-image-panel">
-                <img
-                    src="${project.imageUrl}"
-                    alt="${escapeHtml(project.title)}"
-                    class="project-detail-image"
-                    loading="eager"
-                >
-            </div>
-            <div class="project-detail-meta">
-                <div class="project-detail-actions">
-                    <button type="button" class="btn-primary project-detail-link project-detail-action-wide" id="downloadProjectBtn">
-                        <i class="fa-solid fa-download"></i>
-                        Download PDF
-                    </button>
-                    <a
-                        href="${project.imageUrl}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn-secondary project-detail-link project-detail-action-wide"
-                    >
-                        <i class="fa-regular fa-image"></i>
-                        Open Full Image
-                    </a>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <p style="color: var(--gray-600); line-height: 1.7;">${escapeHtml(project.description) || "No description provided."}</p>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Created</label>
-                    <p style="color: var(--gray-500);">${formatDate(getDisplayDate(project))}</p>
-                </div>
-            </div>
-        </div>
-    `;
-    detailModal.classList.add("is-open");
-    document.body.style.overflow = "hidden";
+function updateOwnerUI() {
+    const openUploadBtn = document.getElementById("openUploadBtn");
+    const ownerLogoutBtn = document.getElementById("ownerLogoutBtn");
+    const ownerLoginBtn = document.getElementById("ownerLoginBtn");
 
-    document.getElementById("downloadProjectBtn").addEventListener("click", () => {
-        downloadProjectSnapshot(project);
-    });
-    
-    document.getElementById("closeDetailModal").addEventListener("click", closeDetailModal);
-}
-
-// Render Projects
-function renderProjects(projects) {
-    if (!projects.length) {
-        galleryContainer.innerHTML = isOwnerAuthenticated ? `<div class="empty-state">
-            <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: var(--space-md);"></i>
-            <p>No projects yet. Upload your first design and it will appear here.</p>
-            <button class="btn-primary" style="margin-top: var(--space-md);" onclick="document.getElementById('openUploadBtn').click()">
-                Upload Your First Project
-            </button>
-        </div>` : `<div class="empty-state">
-            <i class="fa-regular fa-folder-open" style="font-size: 3rem; margin-bottom: var(--space-md);"></i>
-            <p>No projects have been published yet. Check back soon.</p>
-        </div>`;
-        return;
+    if (openUploadBtn) {
+        openUploadBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
     }
-    
-    galleryContainer.innerHTML = "";
-    
-    projects.forEach((project) => {
-        const fragment = cardTemplate.content.cloneNode(true);
-        const card = fragment.querySelector(".project-card");
-        const image = fragment.querySelector(".project-image");
-        const category = fragment.querySelector(".project-category");
-        const title = fragment.querySelector(".project-title");
-        const description = fragment.querySelector(".project-description");
-        const date = fragment.querySelector(".project-date");
-        const deleteButton = fragment.querySelector(".delete-project-btn");
-        const viewButton = fragment.querySelector(".view-project-btn");
-        
-        image.src = project.imageUrl;
-        image.alt = project.title;
-        image.loading = "lazy";
-        category.textContent = project.category || "Graphic Design";
-        title.textContent = project.title;
-        description.textContent = project.description || "No description added for this project yet.";
-        date.innerHTML = `<i class="fa-regular fa-calendar-alt"></i> ${formatDate(getDisplayDate(project))}`;
-        deleteButton.hidden = !isOwnerAuthenticated;
-        
-        deleteButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            deleteProject(project.id);
-        });
-        
-        viewButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            openDetailModal(project);
-        });
-        
-        card.addEventListener("click", () => openDetailModal(project));
-        
-        galleryContainer.appendChild(fragment);
+    if (ownerLogoutBtn) {
+        ownerLogoutBtn.style.display = isOwnerAuthenticated
+            ? "inline-flex"
+            : "none";
+    }
+    if (ownerLoginBtn) {
+        ownerLoginBtn.style.display = isOwnerAuthenticated
+            ? "none"
+            : "inline-flex";
+    }
+
+    const deleteBtns = document.querySelectorAll(".delete-project-btn");
+    deleteBtns.forEach((btn) => {
+        btn.style.display = isOwnerAuthenticated ? "inline-flex" : "none";
     });
 }
 
-// Filter Projects
-function filterProjects() {
-    if (currentFilter === "all") {
-        renderProjects(currentProjects);
-    } else {
-        const filtered = currentProjects.filter(p => p.category === currentFilter);
-        renderProjects(filtered);
-    }
+function clearOwnerAuth() {
+    ownerToken = "";
+    isOwnerAuthenticated = false;
+    localStorage.removeItem(OWNER_TOKEN_STORAGE_KEY);
+    updateOwnerUI();
+    syncMobileMenuWithAuth();
+    showToast("Logged out successfully.");
+    fetchProjects();
 }
 
-// Fetch Projects
-async function fetchProjects() {
-    try {
-        const response = await fetch(API_BASE);
-        if (!response.ok) throw new Error("Could not load projects.");
-        
-        const payload = await response.json();
-        currentProjects = payload.projects || [];
-        filterProjects();
-    } catch (error) {
-        galleryContainer.innerHTML = `<div class="empty-state">
-            <i class="fa-solid fa-server" style="font-size: 3rem; margin-bottom: var(--space-md);"></i>
-            <p>Backend is not reachable. Please start the server.</p>
-        </div>`;
-        showToast(error.message || "Failed to load projects.", "error");
-    }
+function openLoginModal() {
+    closeMobileMenu();
+    document.getElementById("loginModal").classList.add("is-open");
 }
 
-// Delete Project
-async function deleteProject(projectId) {
-    if (!isOwnerAuthenticated || !ownerToken) {
+function closeLoginModal() {
+    document.getElementById("loginModal").classList.remove("is-open");
+    document.getElementById("loginForm").reset();
+}
+
+function openUploadModal() {
+    if (!isOwnerAuthenticated) {
         openLoginModal();
         return;
     }
-
-    const confirmed = confirm("Are you sure you want to delete this project? This action cannot be undone.");
-    if (!confirmed) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}/${projectId}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${ownerToken}`
-            }
-        });
-        const payload = await response.json();
-        
-        if (response.status === 401) {
-            clearOwnerAuth(true);
-            return;
-        }
-
-        if (!response.ok) throw new Error(payload.error || "Could not delete project.");
-        
-        showToast(payload.message || "Project deleted successfully.");
-        fetchProjects();
-    } catch (error) {
-        showToast(error.message || "Delete failed.", "error");
-    }
+    closeMobileMenu();
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("projectDate").value = today;
+    document.getElementById("uploadModal").classList.add("is-open");
 }
 
-// Image Preview
+function closeUploadModal() {
+    document.getElementById("uploadModal").classList.remove("is-open");
+    resetUploadForm();
+}
+
+function resetUploadForm() {
+    document.getElementById("uploadForm").reset();
+    selectedFile = null;
+    document.getElementById("imagePreview").style.display = "none";
+    document.getElementById("previewImg").src = "";
+    document.getElementById("uploadProgress").style.display = "none";
+    const dropzoneContent = document.querySelector(
+        "#dropArea .dropzone-content",
+    );
+    if (dropzoneContent) dropzoneContent.style.display = "block";
+}
+
 function handleFileSelect(file) {
     if (!file) return;
-    
     if (!file.type.startsWith("image/")) {
-        showToast("Only image files are allowed.", "error");
-        selectedFile = null;
-        fileNameDisplay.textContent = "Please choose an image file.";
+        showToast("Only images are allowed", "error");
         return;
     }
-    
     if (file.size > 10 * 1024 * 1024) {
-        showToast("File size must be less than 10MB.", "error");
-        selectedFile = null;
-        fileNameDisplay.textContent = "File too large (max 10MB).";
+        showToast("File size must be less than 10MB", "error");
         return;
     }
-    
     selectedFile = file;
-    fileNameDisplay.textContent = file.name;
-    
-    // Preview image
     const reader = new FileReader();
     reader.onload = (e) => {
-        previewImg.src = e.target.result;
-        imagePreview.style.display = "block";
-        dropArea.querySelector(".dropzone-content").style.display = "none";
+        document.getElementById("previewImg").src = e.target.result;
+        document.getElementById("imagePreview").style.display = "block";
+        const dropzoneContent = document.querySelector(
+            "#dropArea .dropzone-content",
+        );
+        if (dropzoneContent) dropzoneContent.style.display = "none";
     };
     reader.readAsDataURL(file);
 }
 
-function removeImage() {
-    selectedFile = null;
-    imagePreview.style.display = "none";
-    previewImg.src = "";
-    dropArea.querySelector(".dropzone-content").style.display = "flex";
-    fileInput.value = "";
-    fileNameDisplay.textContent = "PNG, JPG, WEBP, or GIF (Max 10MB)";
-}
+async function uploadProjectHandler(e) {
+    e.preventDefault();
 
-// Upload Project
-function uploadProject(event) {
-    event.preventDefault();
-
-    if (!isOwnerAuthenticated || !ownerToken) {
+    if (!isOwnerAuthenticated) {
         openLoginModal();
         return;
     }
-    
-    const title = titleInput.value.trim();
-    const projectDate = projectDateInput?.value;
+    const githubUrl = document.getElementById("githubUrl").value.trim();
+    if (
+        githubUrl &&
+        !/^https?:\/\/(www\.)?github\.com\/.+/.test(githubUrl)
+    ) {
+        showToast("Please enter a valid GitHub URL", "error");
+        return;
+    }
+    const liveUrl = document.getElementById("liveUrl").value.trim();
+    if (liveUrl && !/^https?:\/\/.+/.test(liveUrl)) {
+        showToast("Please enter a valid Live URL", "error");
+        return;
+    }
+    const title = document.getElementById("title").value.trim();
     if (!title) {
-        showToast("Project title is required.", "error");
+        showToast("Project title is required", "error");
+        return;
+    }
+    console.log(githubUrl, liveUrl);
+    const projectDate = document.getElementById("projectDate").value;
+    if (!projectDate) {
+        showToast("Project date is required", "error");
         return;
     }
 
-    if (!projectDate) {
-        showToast("Please choose the project date.", "error");
-        return;
-    }
-    
     if (!selectedFile) {
-        showToast("Please choose an image before uploading.", "error");
+        showToast("Please select an image for the project", "error");
         return;
     }
-    
+
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("category", categoryInput.value.trim() || "Uncategorized");
-    formData.append("description", descriptionInput.value.trim());
+    formData.append(
+        "category",
+        document.getElementById("category").value || "Fullstack App",
+    );
+    formData.append(
+        "description",
+        document.getElementById("description").value.trim() || "",
+    );
     formData.append("projectDate", projectDate);
     formData.append("file", selectedFile);
-    
-    submitUploadBtn.disabled = true;
-    uploadProgress.style.display = "block";
-    progressFill.style.width = "0%";
-    if (progressPercent) progressPercent.textContent = "0%";
-    
-    const request = new XMLHttpRequest();
-    request.open("POST", API_BASE, true);
-    request.setRequestHeader("Authorization", `Bearer ${ownerToken}`);
-    
-    request.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            progressFill.style.width = `${percent}%`;
-            if (progressPercent) progressPercent.textContent = `${percent}%`;
-        }
-    });
-    
-    request.onload = () => {
-        submitUploadBtn.disabled = false;
-        
-        let payload = {};
-        try {
-            payload = JSON.parse(request.responseText);
-        } catch (e) {
-            payload = {};
-        }
-        
-        if (request.status === 401) {
-            clearOwnerAuth(true);
-            return;
-        }
+    formData.append("liveUrl", liveUrl);
+    formData.append("githubUrl", githubUrl);
 
-        if (request.status >= 200 && request.status < 300) {
-            showToast(payload.message || "Project uploaded successfully!");
-            closeModal();
-            fetchProjects();
-        } else {
-            uploadProgress.style.display = "none";
-            progressFill.style.width = "0%";
-            if (progressPercent) progressPercent.textContent = "0%";
-            showToast(payload.error || "Upload failed. Please try again.", "error");
-        }
-    };
-    
-    request.onerror = () => {
-        submitUploadBtn.disabled = false;
-        uploadProgress.style.display = "none";
-        progressFill.style.width = "0%";
-        if (progressPercent) progressPercent.textContent = "0%";
-        showToast("Network error while uploading.", "error");
-    };
-    
-    request.send(formData);
+    const submitBtn = document.querySelector(
+        "#uploadForm button[type='submit']",
+    );
+    submitBtn.disabled = true;
+    document.getElementById("uploadProgress").style.display = "block";
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", API_BASE, true);
+        xhr.setRequestHeader("Authorization", `Bearer ${ownerToken}`);
+
+        xhr.upload.addEventListener("progress", (e) => {
+            if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                const progressFill = document.getElementById("progressFill");
+                if (progressFill) progressFill.style.width = `${percent}%`;
+            }
+        });
+
+        xhr.onload = async () => {
+            submitBtn.disabled = false;
+            document.getElementById("uploadProgress").style.display = "none";
+
+            if (xhr.status === 401) {
+                showToast("Session expired. Please login again.", "error");
+                await validateSession();
+                return;
+            }
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+                const data = JSON.parse(xhr.responseText);
+                showToast(data.message || "Project uploaded successfully!");
+                closeUploadModal();
+                await fetchProjects();
+            } else {
+                const error = JSON.parse(xhr.responseText);
+                showToast(error.error || "Upload failed", "error");
+            }
+        };
+
+        xhr.onerror = () => {
+            submitBtn.disabled = false;
+            document.getElementById("uploadProgress").style.display = "none";
+            showToast("Network error while uploading", "error");
+        };
+
+        xhr.send(formData);
+    } catch (error) {
+        submitBtn.disabled = false;
+        document.getElementById("uploadProgress").style.display = "none";
+        showToast("Error uploading project", "error");
+    }
 }
 
-// Event Listeners
-dropArea.addEventListener("click", () => fileInput.click());
-dropArea.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropArea.classList.add("is-dragover");
-});
-dropArea.addEventListener("dragleave", () => {
-    dropArea.classList.remove("is-dragover");
-});
-dropArea.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropArea.classList.remove("is-dragover");
-    if (e.dataTransfer?.files?.length) {
-        handleFileSelect(e.dataTransfer.files[0]);
+// Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    updateThemeIcon(savedTheme);
+}
+
+function updateThemeIcon(theme) {
+    const themeIcon = document.querySelector("#themeToggle i");
+    if (themeIcon) {
+        themeIcon.className =
+            theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
     }
-});
-
-fileInput.addEventListener("change", (e) => {
-    if (e.target.files?.length) {
-        handleFileSelect(e.target.files[0]);
+    const mobileThemeIcon = document.querySelector("#mobileThemeToggle i");
+    if (mobileThemeIcon) {
+        mobileThemeIcon.className =
+            theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
     }
+}
+
+function toggleTheme() {
+    const currentTheme =
+        document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+    updateThemeIcon(newTheme);
+}
+
+// Event listeners
+const ownerLoginBtn = document.getElementById("ownerLoginBtn"),
+    openUploadBtn = document.getElementById("openUploadBtn"),
+    ownerLogoutBtn = document.getElementById("ownerLogoutBtn");
+
+ownerLoginBtn?.addEventListener("click", openLoginModal);
+openUploadBtn?.addEventListener("click", openUploadModal);
+ownerLogoutBtn?.addEventListener("click", clearOwnerAuth);
+
+// Mobile menu event listeners
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const closeMobileMenuBtn = document.getElementById("closeMobileMenuBtn");
+const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+
+mobileMenuBtn?.addEventListener("click", openMobileMenu);
+closeMobileMenuBtn?.addEventListener("click", closeMobileMenu);
+mobileMenuOverlay?.addEventListener("click", closeMobileMenu);
+
+// Mobile menu link clicks
+document.querySelectorAll("[data-mobile='true']").forEach((link) => {
+    link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const href = link.getAttribute("href");
+        if (href) {
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+        closeMobileMenu();
+    });
 });
 
-removeImageBtn?.addEventListener("click", removeImage);
+// Mobile theme toggle
+const mobileThemeToggle = document.getElementById("mobileThemeToggle");
+mobileThemeToggle?.addEventListener("click", () => {
+    toggleTheme();
+    closeMobileMenu();
+});
 
-ownerLoginBtn?.addEventListener("click", () => openLoginModal());
-heroOwnerBtn?.addEventListener("click", () => openLoginModal());
-ownerLogoutBtn?.addEventListener("click", () => {
+// Mobile auth buttons
+const mobileOwnerLoginBtn = document.getElementById(
+    "mobileOwnerLoginBtn",
+);
+const mobileOpenUploadBtn = document.getElementById(
+    "mobileOpenUploadBtn",
+);
+const mobileOwnerLogoutBtn = document.getElementById(
+    "mobileOwnerLogoutBtn",
+);
+
+mobileOwnerLoginBtn?.addEventListener("click", () => {
+    openLoginModal();
+    closeMobileMenu();
+});
+mobileOpenUploadBtn?.addEventListener("click", () => {
+    openUploadModal();
+    closeMobileMenu();
+});
+mobileOwnerLogoutBtn?.addEventListener("click", () => {
     clearOwnerAuth();
-    showToast("Owner logged out.");
+    closeMobileMenu();
 });
-openUploadBtn?.addEventListener("click", openModal);
-if (heroUploadBtn) heroUploadBtn.addEventListener("click", openModal);
-closeLoginModalBtn?.addEventListener("click", closeLoginModal);
-cancelLoginBtn?.addEventListener("click", closeLoginModal);
-loginModal?.addEventListener("click", (e) => {
-    if (e.target === loginModal) closeLoginModal();
-});
-detailModal?.addEventListener("click", (e) => {
-    if (e.target === detailModal) closeDetailModal();
-});
-closeModalBtn.addEventListener("click", closeModal);
-cancelUploadBtn.addEventListener("click", closeModal);
-uploadModal.addEventListener("click", (e) => {
-    if (e.target === uploadModal) closeModal();
-});
-loginForm?.addEventListener("submit", loginOwner);
-uploadForm.addEventListener("submit", uploadProject);
 
-// Filter tabs
-if (filterTabs) {
-    filterTabs.addEventListener("click", (e) => {
-        const btn = e.target.closest(".filter-btn");
-        if (!btn) return;
-        
-        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
-        filterProjects();
-    });
-}
+document
+    .getElementById("loginForm")
+    ?.addEventListener("submit", loginOwner);
+document
+    .getElementById("cancelLoginBtn")
+    ?.addEventListener("click", closeLoginModal);
+document
+    .getElementById("closeLoginModalBtn")
+    ?.addEventListener("click", closeLoginModal);
+document
+    .getElementById("uploadForm")
+    ?.addEventListener("submit", uploadProjectHandler);
+document
+    .getElementById("closeModalBtn")
+    ?.addEventListener("click", closeUploadModal);
+document
+    .getElementById("cancelUploadBtn")
+    ?.addEventListener("click", closeUploadModal);
+document
+    .getElementById("contactScroll")
+    ?.addEventListener("click", () =>
+        document
+            .getElementById("about")
+            .scrollIntoView({ behavior: "smooth" }),
+    );
+document
+    .getElementById("themeToggle")
+    ?.addEventListener("click", toggleTheme);
 
-// Active nav link on scroll
-window.addEventListener("scroll", () => {
-    const sections = document.querySelectorAll("section");
-    const navLinks = document.querySelectorAll(".nav-link");
-    
-    let current = "";
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        if (scrollY >= sectionTop - 200) {
-            current = section.getAttribute("id");
-        }
-    });
-    
-    navLinks.forEach(link => {
-        link.classList.remove("active");
-        if (link.getAttribute("href") === `#${current}`) {
-            link.classList.add("active");
-        }
-    });
+document.querySelectorAll(".modal-overlay").forEach((overlay) =>
+    overlay.addEventListener("click", () => {
+        document
+            .querySelectorAll(".modal")
+            .forEach((m) => m.classList.remove("is-open"));
+    }),
+);
+
+const dropArea = document.getElementById("dropArea");
+const fileInput = document.getElementById("fileInput");
+
+dropArea?.addEventListener("click", () => fileInput.click());
+dropArea?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.style.borderColor = "var(--primary)";
 });
+dropArea?.addEventListener("dragleave", () => {
+    dropArea.style.borderColor = "var(--border-color)";
+});
+dropArea?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropArea.style.borderColor = "var(--border-color)";
+    if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]);
+});
+
+fileInput?.addEventListener("change", (e) => {
+    if (e.target.files[0]) handleFileSelect(e.target.files[0]);
+});
+
+document
+    .getElementById("removeImageBtn")
+    ?.addEventListener("click", () => {
+        selectedFile = null;
+        document.getElementById("imagePreview").style.display = "none";
+        const dropzoneContent = document.querySelector(
+            "#dropArea .dropzone-content",
+        );
+        if (dropzoneContent) dropzoneContent.style.display = "block";
+        fileInput.value = "";
+    });
 
 // Initialize
-if (projectDateInput) {
-    projectDateInput.value = new Date().toISOString().split("T")[0];
-}
+AOS.init({ duration: 800, once: true });
+initTheme();
 
-updateOwnerUI();
-validateStoredOwnerSession();
-fetchProjects();
+window.addEventListener("load", async () => {
+    setTimeout(() => {
+        document.getElementById("loader")?.classList.add("fade-out");
+        setTimeout(() => document.getElementById("loader")?.remove(), 500);
+    }, 400);
+
+    await validateSession();
+    await fetchProjects();
+});
+
+window.addEventListener("scroll", () => {
+    const nav = document.getElementById("navbar");
+    if (window.scrollY > 50) nav.classList.add("scrolled");
+    else nav.classList.remove("scrolled");
+});
